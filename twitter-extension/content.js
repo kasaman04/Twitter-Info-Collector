@@ -31,34 +31,133 @@ function extractTweetData(article) {
     // インプレッション数（ビュー数）を取得
     let impressions = '0';
     
-    // 複数のパターンでインプレッション数を検索
-    const viewElements = article.querySelectorAll('[data-testid="app-text-transition-container"]');
-    for (const element of viewElements) {
-      const text = element.textContent;
-      if (text && (text.includes('回表示') || text.includes('views') || /^\d+[\d,]*$/.test(text.trim()))) {
-        const match = text.match(/[\d,]+/);
-        if (match) {
-          impressions = match[0].replace(/,/g, '');
-          break;
+    // 最新のTwitter/X構造に対応した複数パターンでの検索
+    const searchPatterns = [
+      // パターン1: analytics group内のビューアイコン付近
+      'a[href*="/analytics"] span',
+      '[data-testid="analytics"] span',
+      
+      // パターン2: ビューアイコン（目のアイコン）の隣のテキスト
+      'svg[aria-label*="表示"] ~ span',
+      'svg[aria-label*="view"] ~ span',
+      'svg[aria-label*="Views"] ~ span',
+      
+      // パターン3: role="button"でaria-labelに表示情報があるもの
+      '[role="button"][aria-label*="表示"] span',
+      '[role="button"][aria-label*="view"] span',
+      '[role="button"][aria-label*="Views"] span',
+      
+      // パターン4: ビューアイコンのパス要素から探す
+      'svg path[d*="M8.75"] ~ text, svg path[d*="M8.75"] + text',
+      
+      // パターン5: 数値パターンのテキスト
+      '[data-testid="app-text-transition-container"]'
+    ];
+    
+    for (const pattern of searchPatterns) {
+      const elements = article.querySelectorAll(pattern);
+      for (const element of elements) {
+        const text = element.textContent?.trim();
+        if (text) {
+          // 数値パターンをチェック（カンマ区切りの数値）
+          const numberMatch = text.match(/^[\d,]+$/);
+          if (numberMatch) {
+            // 親要素のaria-labelや周辺コンテキストをチェック
+            const parent = element.closest('[role="button"]');
+            const ariaLabel = parent?.getAttribute('aria-label') || '';
+            
+            if (ariaLabel.includes('表示') || ariaLabel.includes('view') || ariaLabel.includes('Views')) {
+              impressions = text.replace(/,/g, '');
+              break;
+            }
+          }
+          
+          // 「回表示」「views」「万」「k」「K」などの文字列が含まれる場合
+          if (text.includes('回表示') || text.includes('views') || text.includes('Views') || 
+              text.includes('万') || text.includes('k') || text.includes('K')) {
+            let match = text.match(/([\d,]+\.?\d*)\s*([万kK]?)/);
+            if (match) {
+              let value = parseFloat(match[1].replace(/,/g, ''));
+              const unit = match[2];
+              
+              // 単位換算
+              if (unit === '万') {
+                value = value * 10000;
+              } else if (unit === 'k' || unit === 'K') {
+                value = value * 1000;
+              }
+              
+              impressions = Math.floor(value).toString();
+              break;
+            }
+          }
+        }
+      }
+      if (impressions !== '0') break;
+    }
+    
+    // 最終手段：統計エリア内の数値から判断
+    if (impressions === '0') {
+      const statsArea = article.querySelector('[role="group"]');
+      if (statsArea) {
+        const allSpansInStats = statsArea.querySelectorAll('span');
+        const numberSpans = [];
+        
+        for (const span of allSpansInStats) {
+          const text = span.textContent?.trim();
+          // 数値（万、k含む）を探す
+          if (text && (text.match(/^\d+([.,]\d+)?[万kK]?$/) || text.match(/^\d{1,3}(,\d{3})*$/))) {
+            numberSpans.push({
+              element: span,
+              text: text,
+              value: parseNumberWithUnit(text)
+            });
+          }
+        }
+        
+        // ビュー数は通常最も大きな値
+        if (numberSpans.length > 0) {
+          const largest = numberSpans.reduce((max, current) => 
+            current.value > max.value ? current : max
+          );
+          impressions = largest.value.toString();
         }
       }
     }
     
-    // 別のセレクタでも試す
-    if (impressions === '0') {
-      const analyticsElements = article.querySelectorAll('span');
-      for (const element of analyticsElements) {
-        const text = element.textContent;
-        if (text && text.match(/^\d{1,3}(,\d{3})*$/)) {
-          const parent = element.closest('[role="button"]');
-          if (parent && parent.getAttribute('aria-label') && 
-              (parent.getAttribute('aria-label').includes('表示') || 
-               parent.getAttribute('aria-label').includes('view'))) {
-            impressions = text.replace(/,/g, '');
-            break;
-          }
+    // 数値変換ヘルパー関数
+    function parseNumberWithUnit(text) {
+      const match = text.match(/([\d,]+\.?\d*)\s*([万kK]?)/);
+      if (match) {
+        let value = parseFloat(match[1].replace(/,/g, ''));
+        const unit = match[2];
+        
+        if (unit === '万') {
+          value = value * 10000;
+        } else if (unit === 'k' || unit === 'K') {
+          value = value * 1000;
         }
+        
+        return Math.floor(value);
       }
+      return 0;
+    }
+    
+    // デバッグ: インプレッション数が見つからない場合は詳細ログを出力
+    if (impressions === '0') {
+      console.log('インプレッション数が見つかりません。デバッグ情報:');
+      console.log('記事全体:', article);
+      
+      // すべてのspanとその内容をログ出力
+      const allSpans = article.querySelectorAll('span');
+      allSpans.forEach((span, index) => {
+        const text = span.textContent?.trim();
+        if (text && /^\d+/.test(text)) {
+          console.log(`Span ${index}: "${text}"`, span);
+          console.log('親要素:', span.parentElement);
+          console.log('aria-label:', span.closest('[aria-label]')?.getAttribute('aria-label'));
+        }
+      });
     }
     
     tweetData.impressions = impressions;
@@ -132,8 +231,10 @@ function createSaveButton(article) {
           button.disabled = false;
         }, 3000);
       } else {
+        const errorMsg = response?.error || '不明なエラー';
         console.error('保存失敗:', response);
         button.innerText = '❌ エラー';
+        alert(`保存に失敗しました:\n${errorMsg}`);
         setTimeout(() => button.innerText = '💾 保存', 2000);
       }
     });

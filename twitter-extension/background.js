@@ -51,18 +51,27 @@ async function saveTweetToSpreadsheet(tweetData) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: JSON.stringify(dataToSend)
+      body: JSON.stringify(dataToSend),
+      mode: 'cors',
+      credentials: 'omit'
     });
     
     if (!response.ok) {
       throw new Error(`HTTP エラー: ${response.status} - ${response.statusText}`);
     }
     
-    const responseData = await response.text();
-    console.log('レスポンス:', responseData);
+    const responseText = await response.text();
+    console.log('レスポンス:', responseText);
     
-    return responseData;
+    try {
+      const responseData = JSON.parse(responseText);
+      return responseData;
+    } catch (parseError) {
+      console.warn('JSON解析エラー、テキストとして返却:', parseError);
+      return { success: true, message: responseText };
+    }
     
   } catch (error) {
     console.error('スプレッドシート保存エラー:', error);

@@ -1,0 +1,56 @@
+/* Twitter情報取得 - スタイル */
+
+.twitter-save-button {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.twitter-save-button:hover {
+  background-color: #1991db;
+  transform: scale(1.05);
+}
+
+.twitter-save-button:active {
+  transform: scale(0.95);
+}
+
+.twitter-save-button:disabled {
+  background-color: #657786;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 暗い背景での表示改善 */
+[data-theme="dark"] .twitter-save-button {
+  background-color: #1da1f2;
+  color: white;
+}
+
+[data-theme="dark"] .twitter-save-button:hover {
+  background-color: #1991db;
+}
+
+/* 保存済み状態のスタイル */
+.twitter-save-button:disabled {
+  background-color: #17bf63;
+}
+
+/* エラー状態のスタイル */
+.twitter-save-button.error {
+  background-color: #e0245e;
+}
+
+.twitter-save-button.error:hover {
+  background-color: #c91e49;
+}

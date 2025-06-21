@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter情報取得",
+  "version": "2.0",
+  "description": "Twitter投稿の情報（インプレッション数含む）をスプレッドシートに保存",
+  
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://script.google.com/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Twitter情報取得 設定"
+  },
+  
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon16.png",
+    "128": "icon16.png"
+  }
+}

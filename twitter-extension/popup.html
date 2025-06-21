@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 400px;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      color: #1da1f2;
+      font-size: 18px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    input[type="url"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    input[type="url"]:focus {
+      border-color: #1da1f2;
+      outline: none;
+    }
+    
+    .button {
+      background-color: #1da1f2;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+      transition: background-color 0.3s;
+    }
+    
+    .button:hover {
+      background-color: #1991db;
+    }
+    
+    .button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .status.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .info {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .info h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .test-button {
+      background-color: #28a745;
+      margin-top: 10px;
+    }
+    
+    .test-button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🐦 Twitter情報取得</h1>
+    <p>投稿データをスプレッドシートに保存</p>
+  </div>
+  
+  <div class="info">
+    <h3>📋 取得する情報</h3>
+    <ul style="margin: 0; padding-left: 20px;">
+      <li>投稿内容</li>
+      <li>投稿者名</li>
+      <li>投稿日時</li>
+      <li><strong>インプレッション数</strong></li>
+      <li>いいね数</li>
+      <li>リツイート数</li>
+      <li>返信数</li>
+      <li>投稿URL</li>
+    </ul>
+  </div>
+  
+  <div class="form-group">
+    <label for="gasUrl">Google Apps Script URL:</label>
+    <input type="url" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  </div>
+  
+  <button id="saveButton" class="button">💾 設定を保存</button>
+  <button id="testButton" class="button test-button">🧪 接続テスト</button>
+  
+  <div id="status"></div>
+  
+  <div class="info" style="margin-top: 20px;">
+    <h3>📝 使用方法</h3>
+    <ol style="margin: 0; padding-left: 20px; font-size: 12px;">
+      <li>Google Apps ScriptでWebアプリを作成・デプロイ</li>
+      <li>上記にデプロイURLを入力</li>
+      <li>Twitterで「💾 保存」ボタンをクリック</li>
+    </ol>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
